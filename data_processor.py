@@ -131,7 +131,7 @@ def add_quality_scores(entries):
     
     return entries
 
-def process_data(input_file, output_file):
+def process_data(input_file, output_file, enable_ai=True, enable_history_filter=True):
     """处理数据的主函数"""
     print(f"正在从 {input_file} 读取数据...")
     with open(input_file, 'r', encoding='utf-8') as f:
@@ -139,8 +139,19 @@ def process_data(input_file, output_file):
     
     print(f"读取了 {len(data)} 条原始数据")
     
-    # 去重
+    # 去重(当前批次内部)
     data = deduplicate_entries(data)
+    
+    # 跨天去重(过滤历史已爬取的文章)
+    if enable_history_filter:
+        try:
+            from history_tracker import filter_new_articles, update_history
+            data, filtered_count = filter_new_articles(data)
+            if len(data) == 0:
+                print("⚠️  没有新文章,所有内容都已在历史记录中")
+                return []
+        except Exception as e:
+            print(f"历史去重失败,跳过此步骤: {e}")
     
     # 添加分类
     data = add_categories(data)
@@ -148,10 +159,38 @@ def process_data(input_file, output_file):
     # 添加质量评分
     data = add_quality_scores(data)
     
+    # AI处理:翻译标题和生成中文摘要
+    if enable_ai:
+        try:
+            from ai_processor import batch_process_articles
+            data = batch_process_articles(data, max_articles=100)
+        except Exception as e:
+            print(f"AI处理失败,跳过此步骤: {e}")
+            print("将继续使用原始标题和摘要")
+    
     # 保存处理后的数据
     print(f"正在将处理后的数据保存到 {output_file}...")
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+    
+    # 更新历史记录
+    if enable_history_filter and data:
+        try:
+            from history_tracker import update_history, load_history
+            # 获取当前所有文章的hash
+            current_hashes = [entry['content_hash'] for entry in data if 'content_hash' in entry]
+            # 加载历史hash
+            history = load_history()
+            historical_hashes = history.get('content_hashes', [])
+            # 合并并去重
+            all_hashes = list(set(historical_hashes + current_hashes))
+            # 保持最近500篇文章的hash(避免文件过大)
+            if len(all_hashes) > 500:
+                all_hashes = all_hashes[-500:]
+            update_history(all_hashes)
+            print(f"历史记录已更新: 当前保存 {len(all_hashes)} 篇文章的记录")
+        except Exception as e:
+            print(f"更新历史记录失败: {e}")
     
     print("数据处理完成!")
     return data
@@ -159,10 +198,16 @@ def process_data(input_file, output_file):
 if __name__ == "__main__":
     # 测试数据处理
     import glob
+    import sys
+    
+    # 检查命令行参数
+    enable_ai = '--no-ai' not in sys.argv
+    enable_history_filter = '--no-history' not in sys.argv
+    
     json_files = glob.glob("/home/ubuntu/tech_info_crawler/crawled_data_*.json")
     if json_files:
         latest_file = sorted(json_files)[-1]
         output_file = latest_file.replace('crawled_data_', 'processed_data_')
-        process_data(latest_file, output_file)
+        process_data(latest_file, output_file, enable_ai=enable_ai, enable_history_filter=enable_history_filter)
     else:
         print("未找到待处理的数据文件")

@@ -36,6 +36,7 @@ env/
 crawled_data_*.json
 processed_data_*.json
 report_*.md
+crawled_history.json
 
 # Logs
 *.log

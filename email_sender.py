@@ -57,25 +57,34 @@ def generate_markdown_report(data):
         
         f.write("---\n\n")
         
-        # 按分类导出
+        # 按分类导出文章
         categories = ['AI', 'Biotech', 'Startup', 'VC']
         for category in categories:
             filtered = [entry for entry in data if category in entry.get('categories', [])]
             if filtered:
                 f.write(f"## 🔥 {category} 领域 ({len(filtered)} 篇)\n\n")
+                
+                # 只展示前20篇
                 for i, entry in enumerate(filtered[:20], 1):
-                    f.write(f"### {i}. {entry['title']}\n\n")
-                    f.write(f"- **来源**: {entry['source']}\n")
-                    f.write(f"- **评分**: {entry.get('quality_score', 0)}\n")
-                    f.write(f"- **发布时间**: {entry.get('published', 'N/A')}\n")
-                    f.write(f"- **链接**: [{entry['link']}]({entry['link']})\n")
+                    # 优先使用中文标题,如果没有则使用原标题
+                    title = entry.get('chinese_title', entry['title'])
+                    f.write(f"### {i}. {title}\n\n")
                     
-                    # 添加摘要(截取前300字符)
-                    summary = entry.get('summary', 'N/A')
-                    if len(summary) > 300:
-                        summary = summary[:300] + "..."
-                    f.write(f"- **摘要**: {summary}\n\n")
-                    f.write("---\n\n")
+                    # 优先使用中文摘要,如果没有则使用原摘要
+                    summary = entry.get('chinese_summary', entry.get('summary', 'N/A'))
+                    if summary and summary != 'N/A':
+                        f.write(f"{summary}\n\n")
+                    
+                    # 添加元数据
+                    f.write(f"- **来源**: {entry['source']}\n")
+                    f.write(f"- **质量评分**: {entry.get('quality_score', 0)}\n")
+                    f.write(f"- **原文链接**: [{entry['link']}]({entry['link']})\n")
+                    
+                    # 如果有原始标题且与中文标题不同,也显示出来
+                    if 'chinese_title' in entry and entry['chinese_title'] != entry['title']:
+                        f.write(f"- **原标题**: {entry['title']}\n")
+                    
+                    f.write("\n---\n\n")
         
         # 添加页脚
         f.write("\n---\n\n")
@@ -90,7 +99,12 @@ def send_email_via_mcp(to_email, subject, markdown_file):
     print(f"正在准备发送邮件到: {to_email}")
     
     # 构建邮件内容
-    content = f"您好！\n\n这是今天的优质科技信息日报,详细内容请查看附件中的Markdown报告。\n\n"
+    content = f"您好！\n\n"
+    content += f"这是今天的优质科技信息日报。每篇文章都包含:\n"
+    content += f"• 中文标题(AI翻译)\n"
+    content += f"• 中文摘要(AI总结)\n"
+    content += f"• 原文链接\n\n"
+    content += f"详细内容请查看附件中的Markdown报告。\n\n"
     content += f"本邮件由优质科技信息爬取系统自动生成并发送。\n"
     content += f"项目地址: https://github.com/Xiangyu-Li97/tech-info-crawler\n"
     
