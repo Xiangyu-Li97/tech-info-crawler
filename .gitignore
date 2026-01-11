@@ -36,7 +36,8 @@ env/
 crawled_data_*.json
 processed_data_*.json
 report_*.md
-crawled_history.json
+daily_report_*.md
+# crawled_history.json  # 注释掉,允许GitHub Actions提交历史记录
 
 # Logs
 *.log
