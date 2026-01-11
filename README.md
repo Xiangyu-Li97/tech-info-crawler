@@ -92,7 +92,7 @@ sudo pip3 install -r requirements.txt
 1. 爬取最新科技信息
 2. 处理和分类数据
 3. 生成Markdown报告
-4. 发送邮件到 xiangyuli997@gmail.com
+4. 发送邮件到指定邮箱
 
 无需手动干预,系统会自动运行!
 
@@ -133,7 +133,7 @@ RSS_FEEDS = {
 
 ### 6.2 如何修改收件人邮箱?
 
-编辑 `scheduler.py` 和 `email_sender.py` 文件,将 `RECIPIENT_EMAIL` 或 `xiangyuli997@gmail.com` 修改为您的邮箱地址。
+编辑 `scheduler.py` 文件,将 `RECIPIENT_EMAIL` 修改为您的邮箱地址。
 
 ### 6.3 如何调整执行时间?
 

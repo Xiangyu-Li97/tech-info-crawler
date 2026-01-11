@@ -7,8 +7,8 @@ from datetime import datetime
 import subprocess
 import os
 
-# 配置收件人邮箱
-RECIPIENT_EMAIL = "xiangyuli997@gmail.com"
+# 配置收件人邮箱 - 请在此处填写您的邮箱地址
+RECIPIENT_EMAIL = "your-email@example.com"
 
 def run_crawler():
     """执行爬虫任务"""

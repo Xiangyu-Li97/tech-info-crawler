@@ -163,5 +163,5 @@ def send_daily_report(to_email):
     return success
 
 if __name__ == "__main__":
-    # 测试邮件发送
-    send_daily_report("xiangyuli997@gmail.com")
+    # 测试邮件发送 - 请替换为您的邮箱地址
+    send_daily_report("your-email@example.com")
