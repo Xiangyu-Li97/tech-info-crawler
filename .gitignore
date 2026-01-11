@@ -39,6 +39,13 @@ report_*.md
 daily_report_*.md
 # crawled_history.json  # 注释掉,允许GitHub Actions提交历史记录
 
+# Configuration
+config.env
+
+# Virtual environment
+venv/
+env/
+
 # Logs
 *.log
 scheduler.log
