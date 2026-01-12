@@ -4,3 +4,5 @@ beautifulsoup4
 scrapy
 playwright
 apscheduler
+openai>=1.0.0
+google-generativeai>=0.3.0
